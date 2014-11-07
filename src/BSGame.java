@@ -279,8 +279,6 @@ public class BSGame extends JFrame implements ActionListener, MouseListener {
 			          board[BSGame.BOARD_P2SHIPS]);
 			p2.registerGame(this);
 
-			initializeGame();
-
 			// Start the game
 			p1.addShips();
 			p2.addShips();
