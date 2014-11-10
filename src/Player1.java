@@ -124,7 +124,7 @@ class DensityBoard
 			for (int col = 0; col < NUM_COLS; ++col)
 			{
 				currentDensityIndex = _densityBoard[row][col];
-				if (bestDensityIndex < currentDensityIndex)
+				if (bestDensityIndex < currentDensityIndex && _playersMoveBoard[row][col] == BSGame.PEG_EMPTY)
 				{
 					bestDensityIndex = currentDensityIndex;
 					bestRow = row;
