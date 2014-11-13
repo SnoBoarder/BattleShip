@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Vector;
@@ -6,11 +7,11 @@ import java.util.Vector;
 
 public class ShipPlacement
 {
-	private Queue<int[][]> history_;
+	private Queue<ArrayList<Chromosome>> history_;
 	private double[] weight_;
 	
 	int ancestors_ = 10;
-	
+
 	private int numShips_ = 5;
 	private int[] shipSizes_ = {3,2,3,4,5};
 	
@@ -43,7 +44,7 @@ public class ShipPlacement
 		weight_[0] = alpha_ * numMoves - beta_ * shipsDead;
 	}
 	
-	public int[][] getBoard()
+	public ArrayList<Chromosome> getBoard()
 	{
 		history_.remove();
 
@@ -59,9 +60,9 @@ public class ShipPlacement
 		return history_.remove();
 	}
 	
-	private int[][] nextGene()
+	private ArrayList<Chromosome> nextGene()
 	{
-		int[][] gene = new int[numShips_][5];
+		ArrayList<Chromosome> gene = new ArrayList<Chromosome>(numShips_);
 		
 		int first = 0;
 		int second = 0;
@@ -71,31 +72,26 @@ public class ShipPlacement
 		return gene;
 	}
 	
-	private int[][] randomizeBoard()
+	private ArrayList<Chromosome> randomizeBoard()
 	{		
-		int[][] gene = new int[numShips_][5];
+		ArrayList<Chromosome> genes = new ArrayList<Chromosome>(numShips_);
 		
 		do
 		{
 			for(int x = 0; x < 5; x ++)
 			{
-				gene[x][0] = x;	//ship type
-				gene[x][1] = (int)Math.random() * rows_; //ship row
-				gene[x][2] = (int)Math.random() * cols_; //ship col
-				gene[x][3] = (int)Math.random() * 4; //ship direction
+				genes.get(x).shipType_ = x;	//ship type
+				genes.get(x).shipSize_ = shipSizes_[x];
+				genes.get(x).row_ = (int)Math.random() * rows_; //ship row
+				genes.get(x).col_ = (int)Math.random() * cols_; //ship col
+				genes.get(x).direction_ = (int)Math.random() * 4; //ship direction
 			}
-			
-			gene[0][4] = shipSizes_[0];
-			gene[1][4] = shipSizes_[1];
-			gene[2][4] = shipSizes_[2];
-			gene[3][4] = shipSizes_[3];
-			gene[4][4] = shipSizes_[4];
-		}while(!validBoard(gene));
+		}while(!validBoard(genes));
 		
-		return gene;
+		return genes;
 	}
 	
-	private Boolean validBoard(int[][] gene)
+	private Boolean validBoard(ArrayList<Chromosome> genes)
 	{
 		for(int x = 0; x < rows_; x ++)
 		{
@@ -106,19 +102,19 @@ public class ShipPlacement
 		}
 		
 		//place ships
-		for(int x = 0; x < gene.length; x ++)
+		for(int x = 0; x < genes.size(); x ++)
 		{
 			//get direction, 1 = up, 2 = right, 3 = down, 4 = left
 			//place each ship down
 			//check if any ships overlap
 			  //return false if they do
-			int xMark = gene[x][1];
-			int yMark = gene[x][2];
+			int xMark = genes.get(x).row_;
+			int yMark = genes.get(x).col_;
 			
-			if(gene[x][3] == 1)
+			if(genes.get(x).direction_ == 1)
 			{
 				//up
-				for(int i = 0; i < gene[x][4]; i ++)
+				for(int i = 0; i < genes.get(x).shipSize_; i ++)
 				{
 					if(!board_[xMark][yMark] || xMark < 0)
 					{
@@ -130,10 +126,10 @@ public class ShipPlacement
 				}
 			}
 
-			if(gene[x][3] == 2)
+			if(genes.get(x).direction_ == 2)
 			{
 				//right
-				for(int i = 0; i < gene[x][4]; i ++)
+				for(int i = 0; i < genes.get(x).shipSize_; i ++)
 				{
 					if(!board_[xMark][yMark] || yMark >= cols_)
 					{
@@ -145,10 +141,10 @@ public class ShipPlacement
 				}	
 			}
 			
-			if(gene[x][3] == 3)
+			if(genes.get(x).direction_ == 3)
 			{
 				//down
-				for(int i = 0; i < gene[x][4]; i ++)
+				for(int i = 0; i < genes.get(x).shipSize_; i ++)
 				{
 					if(!board_[xMark][yMark] || xMark >= rows_)
 					{
@@ -160,9 +156,9 @@ public class ShipPlacement
 				}
 			}
 			
-			if(gene[x][3] == 4)
+			if(genes.get(x).direction_ == 4)
 			{
-				for(int i = 0; i < gene[x][4]; i ++)
+				for(int i = 0; i < genes.get(x).shipSize_; i ++)
 				{
 					if(!board_[xMark][yMark] || yMark < 0)
 					{
