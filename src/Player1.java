@@ -50,9 +50,10 @@ public class Player1 extends Player {
 		
 		DensityPeg peg = _tracker.getMove();
 		
-		// Try making a move until successful
+		// make move based on density algorithm
 		game.makeMove(hisShips, myMoves, peg.row + 1, peg.col + 1); // add 1 to be base 1...
 		
+		// make move based on completely random
 		//while(!game.makeMove(hisShips, myMoves, randomRow(), randomCol()));
 
 		numMoves++;
@@ -322,7 +323,10 @@ class DensityShip
 		for (int i = 0; i < _shipLength; ++i)
 		{
 			peg = _shipPegs[i];
-			densityBoard[peg.row][peg.col]++;
+			
+			// only update the density board of this peg if it's empty in the player moves list
+			if (playersMoveBoard[peg.row][peg.col] == BSGame.PEG_EMPTY)
+				densityBoard[peg.row][peg.col]++;
 		}
 	}
 	
@@ -349,12 +353,9 @@ class DensityShip
 			if (peg.col < 0 || peg.col >= DensityBoard.NUM_COLS)
 				return false;
 			
-			switch (playersMoveBoard[peg.row][peg.col])
-			{
-				case BSGame.PEG_HIT:
-				case BSGame.PEG_MISS:
-					return false;
-			}
+			// if the peg was a miss, then invalid placement
+			if (playersMoveBoard[peg.row][peg.col] == BSGame.PEG_MISS)
+				return false;
 		}
 		
 		return true;
