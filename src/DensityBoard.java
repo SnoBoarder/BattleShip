@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.Collections;
+
 /**
  * Implements the Probability Density Algorithm.
  * Takes every ship and tries to place it in every possible situation.
@@ -21,6 +24,10 @@ public class DensityBoard
 	
 	private DensityPeg _movePeg;
 	
+	private ArrayList<DensityPeg> _adjacentToHitList;
+	private ArrayList<DensityPeg> _notAdjacentHitList;
+	private ArrayList<DensityPeg> _poorPool;
+	
 	public DensityBoard(BSGame game, Player self, boolean opponentsShipsSunk[], int playersMovesId)
 	{
 		_game = game;
@@ -32,35 +39,88 @@ public class DensityBoard
 		_densityBoard = new int[NUM_ROWS][NUM_COLS];
 		
 		_movePeg = new DensityPeg();
+		
+		_adjacentToHitList = new ArrayList<DensityPeg>();
+		_notAdjacentHitList = new ArrayList<DensityPeg>();
+		_poorPool = new ArrayList<DensityPeg>();
 	}
 	
+	/**
+	 * Get move based on priority as defined:
+	 * 1. Get densest peg that is adjacent to a hit
+	 * 2. Get densest peg that is not adjacent to a hit
+	 * 
+	 * @return densest valued peg
+	 */
 	public DensityPeg getMove()
 	{
-		int bestDensityIndex = 0;
-		int currentDensityIndex;
+		DensityPeg peg;
 		
-		int bestRow = -1;
-		int bestCol = -1;
-		
-		// TODO: Implement prioritization list and take the highest priority that doesn't have a hint
+		int poolSize = _poorPool.size();
 		for (int row = 0; row < NUM_ROWS; ++row)
 		{
 			for (int col = 0; col < NUM_COLS; ++col)
 			{
-				currentDensityIndex = _densityBoard[row][col];
-				if (bestDensityIndex < currentDensityIndex && _playersMoveBoard[row][col] == BSGame.PEG_EMPTY)
-				{
-					bestDensityIndex = currentDensityIndex;
-					bestRow = row;
-					bestCol = col;
-				}
+				if (_playersMoveBoard[row][col] != BSGame.PEG_EMPTY)
+					continue;
+				
+				/* Peg is empty! */
+				
+				if (poolSize != 0)
+					peg = _poorPool.remove(--poolSize);
+				else
+					peg = new DensityPeg(); // create new peg since we have no more in the pool
+				
+				peg.row = row;
+				peg.col = col;
+				peg.densityValue = _densityBoard[row][col];
+				
+				// store pegs adjacent to hits in one list and store all other pegs in the other list
+				if (adjacentToHit(row, col))
+					_adjacentToHitList.add(peg);
+				else
+					_notAdjacentHitList.add(peg);
 			}
 		}
 		
-		_movePeg.row = bestRow;
-		_movePeg.col = bestCol;
+		if (_adjacentToHitList.size() > 0)
+		{ // we have pegs next to hits! sort from highest to lowest density values
+			Collections.sort(_adjacentToHitList, _movePeg);
+			_movePeg = _adjacentToHitList.get(0); // get the densest value
+		}
+		else
+		{ // we don't have hits next to hits! sort from highest to lowest density values
+			Collections.sort(_notAdjacentHitList, _movePeg);
+			_movePeg = _notAdjacentHitList.get(0); // get the densest value
+		}
+		
+		// add all pegs back to the pool
+		_poorPool.addAll(_adjacentToHitList);
+		_poorPool.addAll(_notAdjacentHitList);
+		
+		// clear lists
+		_adjacentToHitList.clear();
+		_notAdjacentHitList.clear();
 		
 		return _movePeg;
+	}
+	
+	// TODO: Figure out how to check if the HIT is part of a sunken ship
+	private Boolean adjacentToHit(int row, int col)
+	{
+		if (row - 1 >= 0 && _playersMoveBoard[row - 1][col] == BSGame.PEG_HIT)
+			return true; // look up
+		
+		if (row + 1 < NUM_ROWS && _playersMoveBoard[row + 1][col] == BSGame.PEG_HIT)
+			return true; // look down
+		
+		if (col - 1 >= 0 && _playersMoveBoard[row][col - 1] == BSGame.PEG_HIT)
+			return true; // look left
+		
+		if (col + 1 < NUM_COLS && _playersMoveBoard[row][col + 1] == BSGame.PEG_HIT)
+			return true; // look right
+		
+		return false;
 	}
 	
 	/**
