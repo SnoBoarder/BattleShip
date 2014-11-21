@@ -279,6 +279,8 @@ public class BSGame extends JFrame implements ActionListener, MouseListener {
 			          board[BSGame.BOARD_P2SHIPS]);
 			p2.registerGame(this);
 
+			//initializeGame();
+
 			// Start the game
 			p1.addShips();
 			p2.addShips();
@@ -559,8 +561,11 @@ public class BSGame extends JFrame implements ActionListener, MouseListener {
 			}
 		}
 		// five sunk means game over
-		if (count == 5)
+		if (count == 5) {
+			p1.gameOver();
+			p2.gameOver();
 			return true;
+		}
 		else
 			return false;
 

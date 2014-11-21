@@ -130,6 +130,10 @@ public abstract class Player {
 			throw new RuntimeException("Unhandled ship type!");
 		}
 	}
+	
+	public void gameOver() {
+		System.out.println("Game Over");
+	}
 
 
 }
