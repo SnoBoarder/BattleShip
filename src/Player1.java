@@ -1,10 +1,11 @@
-import java.io.Console;
-
 // This player is as rudimentary as it gets.  It simply puts the ships in a static 
 // location, and makes random moves until one sticks.  Your player can use this 
 // as a base to expand upon. It is a good idea to play against this player until yours
 // gets good enough to beat it regularly.
 
+/**
+ * @author Brian, Manu, and Nik
+ */
 public class Player1 extends Player {
 
 	private DensityBoard _tracker;
@@ -35,7 +36,7 @@ public class Player1 extends Player {
 		
 		_tracker = new DensityBoard(game, this, opponentsShipSunk, playersMovesId);
 	}
-
+	
 	@Override
 	public void makeMove()
 	{
@@ -46,7 +47,6 @@ public class Player1 extends Player {
 		}
 		
 		_tracker.update();
-		//_tracker.dump();
 		
 		DensityPeg peg = _tracker.getMove();
 		
@@ -59,6 +59,7 @@ public class Player1 extends Player {
 		numMoves++;
 		System.out.println("Player " + myPlayerNum + " num Moves = " + numMoves);
 		
+		//_tracker.dump();
 		//_tracker.playerMoveDump();
 	}
 
