@@ -1,3 +1,8 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -7,11 +12,15 @@ import java.util.Vector;
 
 public class ShipPlacement
 {
-	private Queue<ArrayList<Chromosome>> history_;
+	private ArrayList<Gene> population_;
 	private double[] weight_;
 	
-	int ancestors_ = 10;
-
+	private String saveFile_ = "population.txt";
+	
+	private int ancestors_ = 10;
+	
+	private int curIndex_ = 0;
+	
 	private int numShips_ = 5;
 	private int[] shipSizes_ = {3,2,3,4,5};
 	
@@ -25,6 +34,13 @@ public class ShipPlacement
 	
 	public ShipPlacement(int rows, int cols)
 	{
+		population_ = new ArrayList<Gene>();
+		
+		for(int x = 0; x < ancestors_; x ++)
+		{
+			population_.add(new Gene(numShips_, shipSizes_));
+		}
+		
 		weight_ = new double[ancestors_];
 			
 		rows_ = rows;
@@ -33,62 +49,165 @@ public class ShipPlacement
 		board_ = new Boolean[rows_][cols_];
 		
 		//add new board
+		//TODO: Remove once we have a stable population. Reinstate to reinitilize population
 		for(int x = 0; x < ancestors_; x ++)
 		{
-			history_.add(randomizeBoard());
+			do
+			{
+				population_.set(x, randomizeBoard());
+			}while(!validBoard(population_.get(x).gene_));
+		}		
+		
+		//see if there is a population to load
+		//loadPopulation();
+		
+		//TEST SAVE POPULATION
+		savePopulation();
+	}
+	
+	public void loadPopulation()
+	{
+		try
+		{
+			BufferedReader in = new BufferedReader(new FileReader(saveFile_));
+			
+			String line = in.readLine();
+			
+			curIndex_ = Integer.valueOf(line);
+			
+			int index = 0;
+			while((line = in.readLine())!=null)
+			{
+				population_.set(index, new Gene(line));
+			}
+			in.close();
+		}
+		
+		catch(IOException e)
+		{
+			e.printStackTrace();
 		}
 	}
 	
+	public void savePopulation()
+	{
+		try {
+			PrintWriter out = new PrintWriter("Population.txt");
+			out.println(String.valueOf(curIndex_));
+			out.println(String.valueOf(population_.get(curIndex_).weight_));
+			for(int x = 0; x < ancestors_; x ++)
+			{
+				System.out.println("Saving " + x);
+				out.println(population_.get(x).writeGene());
+			}
+			out.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	public void setWeight(int numMoves, int shipsDead)
 	{
-		weight_[0] = alpha_ * numMoves - beta_ * shipsDead;
+		population_.get(curIndex_).weight_ = alpha_ * numMoves - beta_ * shipsDead;
+		savePopulation();
 	}
 	
-	public ArrayList<Chromosome> getBoard()
+	public Gene getBoard()
 	{
-		history_.remove();
+		Gene g = population_.get(curIndex_);
 
-		for(int x = 0 ; x < ancestors_ - 1; x ++)
+		curIndex_ ++;
+		
+		if(curIndex_ >= 10)
 		{
-			weight_[x] = weight_[x+1];
+			curIndex_ = 0;
+			
+			//clean house and get a new population
+			Gene[] wList = new Gene[ancestors_];
+			
+			//quick selection sort
+			for(int x = 0; x < ancestors_; x ++)
+			{
+				float high = 0;
+				for(int y = x; y < ancestors_; y ++)
+				{
+					if(population_.get(y).weight_ > high)
+					{
+						wList[x] = population_.get(y);
+					}
+				}
+			}
+			
+			//cull population
+			population_.clear();
+			
+			//repopulate
+			//make this a weighted repopulation
+			Gene best = wList[0];
+			Gene secondBest = wList[1];
+			
+			for(int x = 0; x < ancestors_; x ++)
+			{
+				int mate = (int)Math.random()%ancestors_;
+				if(x < ancestors_/2)
+				{		
+					//first gets first dibs
+					population_.add(nextGene(secondBest, wList[mate]));
+				}
+				
+				else
+				{
+					population_.add(nextGene(best, wList[mate]));
+				}
+			}
+			
 		}
 
-		//add new gene to gene pool
-		history_.add(nextGene());
-		weight_[ancestors_ - 1] = 0;
-
-		return history_.remove();
+		return g;
 	}
 	
-	private ArrayList<Chromosome> nextGene()
+	private Gene nextGene(Gene one, Gene two)
 	{
-		ArrayList<Chromosome> gene = new ArrayList<Chromosome>(numShips_);
-		
-		int first = 0;
-		int second = 0;
+		//create a new gene
+		Gene nG = new Gene(numShips_, shipSizes_);
 		
 		
-		
-		return gene;
+		//couplate the two given genes
+		//make sure that the result is valid. 
+
+		do
+		{
+			for(int x = 0; x < numShips_; x ++)
+			{
+				int which = (int)Math.random() % 2;
+				
+				if(which == 0)
+					nG.gene_.set(x, one.gene_.get(x));
+				
+				else
+					nG.gene_.set(x, two.gene_.get(x));
+			}
+			
+			if(Math.random()%20 == 0)
+			{
+				nG.mutateGene();
+			}
+		}while(!validBoard(nG.gene_));
+
+		return nG;
 	}
 	
-	private ArrayList<Chromosome> randomizeBoard()
+	private Gene randomizeBoard()
 	{		
-		ArrayList<Chromosome> genes = new ArrayList<Chromosome>(numShips_);
+		Gene gene = new Gene(numShips_, shipSizes_);
 		
 		do
 		{
-			for(int x = 0; x < 5; x ++)
-			{
-				genes.get(x).shipType_ = x;	//ship type
-				genes.get(x).shipSize_ = shipSizes_[x];
-				genes.get(x).row_ = (int)Math.random() * rows_; //ship row
-				genes.get(x).col_ = (int)Math.random() * cols_; //ship col
-				genes.get(x).direction_ = (int)Math.random() * 4; //ship direction
-			}
-		}while(!validBoard(genes));
+			gene.randomizeGene(rows_, cols_);
+
+		}while(!validBoard(gene.gene_));
 		
-		return genes;
+		return gene;
 	}
 	
 	private Boolean validBoard(ArrayList<Chromosome> genes)
@@ -111,12 +230,17 @@ public class ShipPlacement
 			int xMark = genes.get(x).row_;
 			int yMark = genes.get(x).col_;
 			
+			if(xMark < 0 || xMark >= rows_ || yMark < 0 || yMark >= cols_)
+			{
+				return false;
+			}
+			
 			if(genes.get(x).direction_ == 1)
 			{
 				//up
 				for(int i = 0; i < genes.get(x).shipSize_; i ++)
 				{
-					if(!board_[xMark][yMark] || xMark < 0)
+					if(xMark < 0 || !board_[xMark][yMark])
 					{
 						return false;
 					}
@@ -131,7 +255,7 @@ public class ShipPlacement
 				//right
 				for(int i = 0; i < genes.get(x).shipSize_; i ++)
 				{
-					if(!board_[xMark][yMark] || yMark >= cols_)
+					if( yMark >= cols_ || !board_[xMark][yMark])
 					{
 						return false;
 					}
@@ -146,7 +270,7 @@ public class ShipPlacement
 				//down
 				for(int i = 0; i < genes.get(x).shipSize_; i ++)
 				{
-					if(!board_[xMark][yMark] || xMark >= rows_)
+					if(xMark >= rows_ || !board_[xMark][yMark] )
 					{
 						return false;
 					}
@@ -160,7 +284,7 @@ public class ShipPlacement
 			{
 				for(int i = 0; i < genes.get(x).shipSize_; i ++)
 				{
-					if(!board_[xMark][yMark] || yMark < 0)
+					if(yMark < 0 || !board_[xMark][yMark])
 					{
 						return false;
 					}

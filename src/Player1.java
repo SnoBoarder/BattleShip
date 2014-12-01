@@ -10,8 +10,10 @@ public class Player1 extends Player {
 
 	private DensityBoard _tracker;
 	
-	private boolean _firstMove = true;
+	private ShipPlacement _placement;
 	
+	private boolean _firstMove = true;
+		
 	// You must call the super to establish the necessary game variables
 	// and register the game.
 	public Player1(int playerNum) {
@@ -65,6 +67,10 @@ public class Player1 extends Player {
 
 	public boolean addShips() {
 		
+		_placement = new ShipPlacement(10,10);
+		
+		Gene gene = _placement.getBoard();
+		
 		game.putShip(myShips, Ships.SHIP_CARRIER, 2, 2, Ships.SHIP_SOUTH);
 		game.putShip(myShips, Ships.SHIP_BATTLESHIP, 5, 5, Ships.SHIP_EAST);
 		game.putShip(myShips, Ships.SHIP_CRUISER, 6, 7, Ships.SHIP_EAST);
@@ -72,5 +78,53 @@ public class Player1 extends Player {
 		game.putShip(myShips, Ships.SHIP_SUBMARINE, 9, 9, Ships.SHIP_NORTH);
 
 		return true;
+	}
+	
+	public void gameOver() {
+		System.out.println("Game Over");
+		
+		//check if we won
+		Boolean lost = true;
+		
+		int enemyDead = 0;
+		int usDead = 0;
+		
+		if(game.p1 == this)
+		{			
+			for(int x = 0; x < game.p1ShipsSunk.length; x ++)
+			{
+				if(game.p2ShipsSunk[x])
+				{
+					enemyDead ++;
+				}
+				
+				if(game.p1ShipsSunk[x])
+				{
+					usDead ++;
+				}
+				
+				lost = lost && game.p1ShipsSunk[x];
+			}
+		}
+		
+		if(game.p2 == this)
+		{
+			for(int x = 0; x < game.p2ShipsSunk.length; x ++)
+			{
+				if(game.p1ShipsSunk[x])
+				{
+					enemyDead ++;
+				}
+				
+				if(game.p2ShipsSunk[x])
+				{
+					usDead ++;
+				}
+				
+				lost = lost && game.p2ShipsSunk[x];
+			}
+		}
+		
+		_placement.setWeight(numMoves, usDead);
 	}
 }
