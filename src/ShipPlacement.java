@@ -227,12 +227,39 @@ public class ShipPlacement
 				nG.gene_.set(x, two.gene_.get(x));
 		}
 		
+		int tries = 0;
 		while(!validBoard(nG.gene_))
 		{
+			//try again, but mutate
+			for(int x = 0; x < numShips_; x ++)
+			{
+				double which = (Math.random() * 1);
+				
+				if(which > .50)
+					nG.gene_.set(x, one.gene_.get(x));
+				
+				else
+					nG.gene_.set(x, two.gene_.get(x));
+			}
+			
 			//child is no good, mutate till workable
 			//mutate till we get a viable pair
+			
 			System.out.println("Trying new child");
-			nG.mutateGene();
+			
+			if((Math.random())*1 < .05)
+			{
+				//straight up combination didn't work, try mutation
+				nG.mutateGene();
+			}
+			//tries ++;
+			
+			if(tries > 5000)
+			{
+				//even this many mutations cannot save this gene.
+				//"adoption"
+				nG = randomizeBoard();
+			}
 		}
 
 		return nG;
