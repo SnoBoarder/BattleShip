@@ -17,7 +17,7 @@ public class ShipPlacement
 	
 	private String saveFile_ = "population.txt";
 	
-	private int ancestors_ = 10;
+	private int ancestors_ = 20;
 	
 	private int curIndex_ = 0;
 	
@@ -29,8 +29,11 @@ public class ShipPlacement
 	private int rows_;
 	private int cols_;
 	
-	private double alpha_ = 1;
-	private double beta_ = 1;
+	//moves coefficient
+	private double alpha_ = .2;
+	
+	//ships alive coefficient
+	private double beta_ = .8;
 	
 	public ShipPlacement(int rows, int cols)
 	{
@@ -52,13 +55,11 @@ public class ShipPlacement
 		//TODO: Remove once we have a stable population. Reinstate to reinitilize population
 		for(int x = 0; x < ancestors_; x ++)
 		{
-			do
-			{
-				population_.set(x, randomizeBoard());
-			}while(!validBoard(population_.get(x).gene_));
+			population_.set(x, randomizeBoard());
 		}		
 		
 		//see if there is a population to load
+		System.out.println("Loading population from file");
 		loadPopulation();
 	}
 	
@@ -112,12 +113,12 @@ public class ShipPlacement
 			e.printStackTrace();
 		}
 	}
-	public void setWeight(int numMoves, int shipsDead)
+	public void setWeight(int numMoves, int shipsAlive)
 	{		
 		if(curIndex_ < ancestors_)
 		{
 			//curIndex == ancestors_ indicates we just got a new population. No need to save this current person's weight
-			population_.get(curIndex_ - 1).weight_ = alpha_ * numMoves - beta_ * shipsDead;
+			population_.get(curIndex_ - 1).weight_ = alpha_ * numMoves + beta_ * shipsAlive;
 		}
 		savePopulation();
 	}
@@ -149,30 +150,32 @@ public class ShipPlacement
 			
 			population_.clear();
 			
+			System.out.println("Repopulating");
+			
 			//repopulate
 			//make this a weighted repopulation
 			Gene best = wList[0];
 			Gene secondBest = wList[1];
 			
 			for(int x = 0; x < ancestors_; x ++)
-			{
-				
+			{			
 				Gene child;
 				
 				double prob = Math.random() * 1;
 				
-				if(prob < .3)
+				if(prob > ((1/ancestors_)*2))
 				{		
-
-					int mate = (int)(Math.random()*(ancestors_ - 1));
-					while(mate == 1)
+					//2/ancestor times we will not have random mating, it will be the best
+					int mate1 = (int)(Math.random()*(ancestors_ - 1));
+					int mate2 = (int)(Math.random()*(ancestors_ - 1));
+					
+					while(mate2 == mate1)
 					{
 						//no mating with self
-						//you just get the best
-						mate = (int)(Math.random()*(ancestors_ - 1));
+						mate2 = (int)(Math.random()*(ancestors_ - 1));
 					}
 					//first gets first dibs
-					child = nextGene(secondBest, wList[mate]);
+					child = nextGene(wList[mate2], wList[mate1]);
 				}
 				
 				else
@@ -189,6 +192,7 @@ public class ShipPlacement
 				
 				population_.add(child);
 			}
+			System.out.println("Finished Repopulation");
 			
 		}
 		
@@ -197,7 +201,7 @@ public class ShipPlacement
 
 		curIndex_ ++;
 		
-		
+		System.out.println("Returning new gene");
 
 		return g;
 	}
@@ -211,29 +215,30 @@ public class ShipPlacement
 		//couplate the two given genes
 		//make sure that the result is valid. 
 
-		do
+		System.out.println("Couplating");
+		for(int x = 0; x < numShips_; x ++)
 		{
-			for(int x = 0; x < numShips_; x ++)
-			{
-				double which = (Math.random() * 1);
-				
-				if(which > .50)
-					nG.gene_.set(x, one.gene_.get(x));
-				
-				else
-					nG.gene_.set(x, two.gene_.get(x));
-			}
+			double which = (Math.random() * 1);
 			
-			if((int)(Math.random() * 19) == 5)
-			{
-				nG.mutateGene();
-			}
-		}while(!validBoard(nG.gene_));
+			if(which > .50)
+				nG.gene_.set(x, one.gene_.get(x));
+			
+			else
+				nG.gene_.set(x, two.gene_.get(x));
+		}
+		
+		while(!validBoard(nG.gene_))
+		{
+			//child is no good, mutate till workable
+			//mutate till we get a viable pair
+			System.out.println("Trying new child");
+			nG.mutateGene();
+		}
 
 		return nG;
 	}
 	
-	private Gene randomizeBoard()
+	public Gene randomizeBoard()
 	{		
 		Gene gene = new Gene(numShips_, shipSizes_);
 		

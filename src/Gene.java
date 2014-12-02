@@ -15,7 +15,6 @@ public class Gene
 		
 		for(int x = 0; x < shipSizes.length; x ++)
 		{
-			System.out.println("Loading chromosome " + x);
 			Chromosome c = new Chromosome();
 			c.shipSize_ = shipSizes[x];
 			c.shipType_ = x;
@@ -37,9 +36,7 @@ public class Gene
 		index = g.indexOf(";");
 		
 		while(index < g.length() && index != -1)
-		{
-			System.out.println("Loading Chromosome from file");
-			
+		{			
 			chro = g.substring(0, index);
 			
 			Chromosome c = new Chromosome(chro);
@@ -59,7 +56,7 @@ public class Gene
 
 	public void mutateGene()
 	{
-		int change = numMutations_;//(int)Math.random()%(gene_.size());
+		int change = (int)(Math.random()*(gene_.size()));
 		
 		int index = 0;
 		
@@ -73,7 +70,7 @@ public class Gene
 		int x = 0;
 		while(x < change)
 		{
-			index = (int)(Math.random() * gene_.size());
+			index = (int)(Math.random() * (gene_.size() - 1));
 			
 			if(!changed[index])
 			{
