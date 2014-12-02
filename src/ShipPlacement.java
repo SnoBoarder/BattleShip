@@ -70,13 +70,21 @@ public class ShipPlacement
 			
 			String line = in.readLine();
 			
-			curIndex_ = Integer.valueOf(line);
+			int skip = Integer.valueOf(line);
 			
-			int index = 0;
-			while((line = in.readLine())!=null)
+			if(skip == 1)
 			{
-				population_.set(index, new Gene(line));
-				index ++;
+				//0=true, 1=false
+				//if skip == 0, then lets do this; otherwise, keep random population
+				line = in.readLine();
+				curIndex_ = Integer.valueOf(line);
+				
+				int index = 0;
+				while((line = in.readLine())!=null)
+				{
+					population_.set(index, new Gene(line));
+					index ++;
+				}
 			}
 			in.close();
 		}
@@ -91,6 +99,7 @@ public class ShipPlacement
 	{
 		try {
 			PrintWriter out = new PrintWriter("Population.txt");
+			out.println(String.valueOf(1));
 			out.println(String.valueOf(curIndex_));
 			for(int x = 0; x < ancestors_; x ++)
 			{
