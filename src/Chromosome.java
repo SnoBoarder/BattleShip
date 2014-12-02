@@ -15,25 +15,27 @@ public class Chromosome
 	{
 		int index = 0;
 		
+		c = c.replaceAll("\\s+","");
+		
 		index = c.indexOf(',');
 		
-		row_ = Integer.valueOf(c.substring(0,index -1));
+		row_ = Integer.valueOf(c.substring(0,index));
 		
 		c = c.substring(index +1);
 		
-		col_ = Integer.valueOf(c.substring(0, index-1));
+		col_ = Integer.valueOf(c.substring(0, index));
 		
 		c = c.substring(index +1);
 		
-		direction_ = Integer.valueOf(c.substring(0, index -1));
+		direction_ = Integer.valueOf(c.substring(0, index));
 
 		c = c.substring(index +1);
 
-		shipSize_ = Integer.valueOf(c.substring(0, index -1));
+		shipSize_ = Integer.valueOf(c.substring(0, index));
 
 		c = c.substring(index +1);
 
-		shipType_ = Integer.valueOf(c.substring(0, index -1));
+		shipType_ = Integer.valueOf(c.substring(0, index));
 	}
 	
 	public void mutate()

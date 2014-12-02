@@ -59,10 +59,7 @@ public class ShipPlacement
 		}		
 		
 		//see if there is a population to load
-		//loadPopulation();
-		
-		//TEST SAVE POPULATION
-		savePopulation();
+		loadPopulation();
 	}
 	
 	public void loadPopulation()
@@ -79,6 +76,7 @@ public class ShipPlacement
 			while((line = in.readLine())!=null)
 			{
 				population_.set(index, new Gene(line));
+				index ++;
 			}
 			in.close();
 		}
@@ -94,7 +92,6 @@ public class ShipPlacement
 		try {
 			PrintWriter out = new PrintWriter("Population.txt");
 			out.println(String.valueOf(curIndex_));
-			out.println(String.valueOf(population_.get(curIndex_).weight_));
 			for(int x = 0; x < ancestors_; x ++)
 			{
 				System.out.println("Saving " + x);
@@ -107,19 +104,21 @@ public class ShipPlacement
 		}
 	}
 	public void setWeight(int numMoves, int shipsDead)
-	{
-		population_.get(curIndex_).weight_ = alpha_ * numMoves - beta_ * shipsDead;
+	{		
+		if(curIndex_ < ancestors_)
+		{
+			//curIndex == ancestors_ indicates we just got a new population. No need to save this current person's weight
+			population_.get(curIndex_ - 1).weight_ = alpha_ * numMoves - beta_ * shipsDead;
+		}
 		savePopulation();
 	}
 	
 	public Gene getBoard()
 	{
-		Gene g = population_.get(curIndex_);
-
-		curIndex_ ++;
-		
-		if(curIndex_ >= 10)
+		if(curIndex_ >= ancestors_)
 		{
+			//all the previous ancestors have been used up
+			
 			curIndex_ = 0;
 			
 			//clean house and get a new population
@@ -128,17 +127,17 @@ public class ShipPlacement
 			//quick selection sort
 			for(int x = 0; x < ancestors_; x ++)
 			{
-				float high = 0;
+				double high = 0;
 				for(int y = x; y < ancestors_; y ++)
 				{
-					if(population_.get(y).weight_ > high)
+					if(population_.get(y).weight_ >= high)
 					{
 						wList[x] = population_.get(y);
+						high = population_.get(y).weight_;
 					}
 				}
 			}
 			
-			//cull population
 			population_.clear();
 			
 			//repopulate
@@ -148,20 +147,48 @@ public class ShipPlacement
 			
 			for(int x = 0; x < ancestors_; x ++)
 			{
-				int mate = (int)Math.random()%ancestors_;
-				if(x < ancestors_/2)
+				
+				Gene child;
+				
+				double prob = Math.random() * 1;
+				
+				if(prob < .3)
 				{		
+
+					int mate = (int)(Math.random()*(ancestors_ - 1));
+					while(mate == 1)
+					{
+						//no mating with self
+						//you just get the best
+						mate = (int)(Math.random()*(ancestors_ - 1));
+					}
 					//first gets first dibs
-					population_.add(nextGene(secondBest, wList[mate]));
+					child = nextGene(secondBest, wList[mate]);
 				}
 				
 				else
 				{
-					population_.add(nextGene(best, wList[mate]));
+					int mate = (int)(Math.random()*(ancestors_ - 1));
+					while(mate == 0)
+					{
+						//no mating with self
+						//you just get the best
+						mate = (int)(Math.random()*(ancestors_ - 1));
+					}
+					child = nextGene(best, wList[mate]);
 				}
+				
+				population_.add(child);
 			}
 			
 		}
+		
+		//get the gene at our current index
+		Gene g = population_.get(curIndex_);
+
+		curIndex_ ++;
+		
+		
 
 		return g;
 	}
@@ -179,16 +206,16 @@ public class ShipPlacement
 		{
 			for(int x = 0; x < numShips_; x ++)
 			{
-				int which = (int)Math.random() % 2;
+				double which = (Math.random() * 1);
 				
-				if(which == 0)
+				if(which > .50)
 					nG.gene_.set(x, one.gene_.get(x));
 				
 				else
 					nG.gene_.set(x, two.gene_.get(x));
 			}
 			
-			if(Math.random()%20 == 0)
+			if((int)(Math.random() * 19) == 5)
 			{
 				nG.mutateGene();
 			}
@@ -235,7 +262,7 @@ public class ShipPlacement
 				return false;
 			}
 			
-			if(genes.get(x).direction_ == 1)
+			if(genes.get(x).direction_ == 0)
 			{
 				//up
 				for(int i = 0; i < genes.get(x).shipSize_; i ++)
@@ -250,7 +277,7 @@ public class ShipPlacement
 				}
 			}
 
-			if(genes.get(x).direction_ == 2)
+			if(genes.get(x).direction_ == 1)
 			{
 				//right
 				for(int i = 0; i < genes.get(x).shipSize_; i ++)
@@ -265,7 +292,7 @@ public class ShipPlacement
 				}	
 			}
 			
-			if(genes.get(x).direction_ == 3)
+			if(genes.get(x).direction_ == 2)
 			{
 				//down
 				for(int i = 0; i < genes.get(x).shipSize_; i ++)
@@ -280,7 +307,7 @@ public class ShipPlacement
 				}
 			}
 			
-			if(genes.get(x).direction_ == 4)
+			if(genes.get(x).direction_ == 3)
 			{
 				for(int i = 0; i < genes.get(x).shipSize_; i ++)
 				{

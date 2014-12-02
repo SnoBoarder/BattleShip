@@ -18,19 +18,28 @@ public class Gene
 			System.out.println("Loading chromosome " + x);
 			Chromosome c = new Chromosome();
 			c.shipSize_ = shipSizes[x];
-			
+			c.shipType_ = x;
 			gene_.add(c);
 		}
 	}
 	
 	public Gene(String g)
 	{
+		gene_ = new ArrayList<Chromosome>();
+		
 		String chro;
 		
 		int index = g.indexOf(";");
 		
-		while(index < g.length())
+		weight_ = Double.valueOf(g.substring(0, index));
+		
+		g = g.substring(index+1);
+		index = g.indexOf(";");
+		
+		while(index < g.length() && index != -1)
 		{
+			System.out.println("Loading Chromosome from file");
+			
 			chro = g.substring(0, index);
 			
 			Chromosome c = new Chromosome(chro);
@@ -82,13 +91,17 @@ public class Gene
 			gene_.get(x).row_ = ((int)(Math.random()*(rows-1)));
 			gene_.get(x).col_ = ((int)(Math.random()*(cols-1)));
 			
-			gene_.get(x).direction_ = ((int)(Math.random()*4));
+			gene_.get(x).direction_ = ((int)(Math.random()*3));		
 		}
 	}
 	
 	public String writeGene()
 	{
 		String gene = "";
+		
+		gene += weight_;
+		
+		gene += " ; " ;
 		
 		for(int x = 0; x < gene_.size(); x++)
 		{
