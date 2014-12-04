@@ -17,7 +17,7 @@ public class ShipPlacement
 	
 	private String saveFile_ = "population.txt";
 	
-	private int ancestors_ = 20;
+	private int ancestors_ = 15;
 	
 	private int curIndex_ = 0;
 	
@@ -30,10 +30,13 @@ public class ShipPlacement
 	private int cols_;
 	
 	//moves coefficient
-	private double alpha_ = .2;
+	private double alpha_ = .3;
 	
 	//ships alive coefficient
-	private double beta_ = .8;
+	private double beta_ = .7;
+	
+	//evolution rate
+	private double evoRate_ = .05;
 	
 	public ShipPlacement(int rows, int cols)
 	{
@@ -104,7 +107,7 @@ public class ShipPlacement
 			out.println(String.valueOf(curIndex_));
 			for(int x = 0; x < ancestors_; x ++)
 			{
-				System.out.println("Saving " + x);
+				//System.out.println("Saving " + x);
 				out.println(population_.get(x).writeGene());
 			}
 			out.close();
@@ -221,47 +224,51 @@ public class ShipPlacement
 			double which = (Math.random() * 1);
 			
 			if(which > .50)
-				nG.gene_.set(x, one.gene_.get(x));
+				nG.gene_.set(x, new Chromosome(one.gene_.get(x)));
 			
 			else
-				nG.gene_.set(x, two.gene_.get(x));
+				nG.gene_.set(x, new Chromosome(two.gene_.get(x)));
+		}
+		
+		if((Math.random())*1 < evoRate_)
+		{
+			//straight up combination didn't work, try mutation
+			nG.mutateGene();
 		}
 		
 		int tries = 0;
 		while(!validBoard(nG.gene_))
 		{
-			//try again, but mutate
-			for(int x = 0; x < numShips_; x ++)
+			tries ++;
+			nG = randomizeBoard();//new Gene(numShips_, shipSizes_);
+
+			if(tries < 5000)
 			{
-				double which = (Math.random() * 1);
+				//try again
+				for(int x = 0; x < numShips_; x ++)
+				{
+					double which = (Math.random() * 1);
+										
+					if(which > .50)
+						nG.gene_.set(x, new Chromosome(one.gene_.get(x)));
+					
+					else
+						nG.gene_.set(x, new Chromosome(two.gene_.get(x)));
+				}
 				
-				if(which > .50)
-					nG.gene_.set(x, one.gene_.get(x));
+				//child is no good, mutate till workable
+				//mutate till we get a viable pair
 				
-				else
-					nG.gene_.set(x, two.gene_.get(x));
-			}
-			
-			//child is no good, mutate till workable
-			//mutate till we get a viable pair
-			
-			System.out.println("Trying new child");
-			
-			if((Math.random())*1 < .05)
-			{
-				//straight up combination didn't work, try mutation
-				nG.mutateGene();
-			}
-			//tries ++;
-			
-			if(tries > 5000)
-			{
-				//even this many mutations cannot save this gene.
-				//"adoption"
-				nG = randomizeBoard();
+				
+				if((Math.random())*1 < evoRate_)
+				{
+					//straight up combination didn't work, try mutation
+					nG.mutateGene();
+				}
 			}
 		}
 
+		System.out.println("Child took : " + tries + " tries");
 		return nG;
 	}
 	
@@ -298,11 +305,13 @@ public class ShipPlacement
 			int xMark = genes.get(x).row_;
 			int yMark = genes.get(x).col_;
 			
+			//does the ship start off the board?
 			if(xMark < 0 || xMark >= rows_ || yMark < 0 || yMark >= cols_)
 			{
 				return false;
 			}
 			
+			//check if the ship goes off the board or overlaps another
 			if(genes.get(x).direction_ == 0)
 			{
 				//up
@@ -350,6 +359,7 @@ public class ShipPlacement
 			
 			if(genes.get(x).direction_ == 3)
 			{
+				//left
 				for(int i = 0; i < genes.get(x).shipSize_; i ++)
 				{
 					if(yMark < 0 || !board_[xMark][yMark])

@@ -11,6 +11,15 @@ public class Chromosome
 	{
 	}
 	
+	public Chromosome(Chromosome c)
+	{
+		shipType_ = c.shipType_;
+		shipSize_ = c.shipSize_;
+		direction_ = c.direction_;
+		row_ = c.row_;
+		col_ = c.col_;
+	}
+	
 	public Chromosome(String c)
 	{
 		int index = 0;
@@ -40,21 +49,21 @@ public class Chromosome
 	
 	public void mutate()
 	{
-		int which = (int)(Math.random()*3);
+		int which = (int)(Math.random()*2);
 		
 		if(which == 0)
 		{
-			row_ = row_ + ((int)(Math.random()*3)) - 1;
+			row_ = row_ + ((int)(Math.random()*2)) - 1;
 		}
 		
 		if(which == 1)
 		{
-			col_ = col_ + ((int)(Math.random()*3)) - 1;
+			col_ = col_ + ((int)(Math.random()*2)) - 1;
 		}
 		
 		if(which == 2)
 		{
-			direction_ = (int)(Math.random()*4);
+			direction_ = (int)(Math.random()*3);
 		}
 	}
 	

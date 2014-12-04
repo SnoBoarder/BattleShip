@@ -22,6 +22,16 @@ public class Gene
 		}
 	}
 	
+	public Gene(Gene g)
+	{
+		gene_ = new ArrayList<Chromosome>();
+		for(int x = 0; x < g.gene_.size(); x ++)
+		{
+			gene_.add(new Chromosome(gene_.get(x)));
+		}
+		
+	}
+	
 	public Gene(String g)
 	{
 		gene_ = new ArrayList<Chromosome>();
@@ -76,6 +86,8 @@ public class Gene
 			{
 				x ++;
 				gene_.get(x).mutate();
+				
+				changed[index] = true;
 			}
 		}
 	}
@@ -107,7 +119,7 @@ public class Gene
 			gene += " ; ";
 		}
 		
-		System.out.println("Writing " + gene);
+		//System.out.println("Writing " + gene);
 		
 		return gene;
 	}
