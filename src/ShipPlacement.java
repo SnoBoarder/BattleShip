@@ -17,7 +17,7 @@ public class ShipPlacement
 	
 	private String saveFile_ = "population.txt";
 	
-	private int ancestors_ = 15;
+	private int ancestors_ = 50;
 	
 	private int curIndex_ = 0;
 	
@@ -30,13 +30,16 @@ public class ShipPlacement
 	private int cols_;
 	
 	//moves coefficient
-	private double alpha_ = .3;
+	private double alpha_ = .4;
 	
 	//ships alive coefficient
-	private double beta_ = .7;
+	private double beta_ = .6;
 	
-	//evolution rate
+	//mutation rate
 	private double evoRate_ = .05;
+	
+	//favor best gets to mate
+	private double favor_ = .5;
 	
 	public ShipPlacement(int rows, int cols)
 	{
@@ -118,9 +121,8 @@ public class ShipPlacement
 	}
 	public void setWeight(int numMoves, int shipsAlive)
 	{		
-		if(curIndex_ < ancestors_)
+		if(curIndex_ <= ancestors_)
 		{
-			//curIndex == ancestors_ indicates we just got a new population. No need to save this current person's weight
 			population_.get(curIndex_ - 1).weight_ = alpha_ * numMoves + beta_ * shipsAlive;
 		}
 		savePopulation();
@@ -160,25 +162,29 @@ public class ShipPlacement
 			Gene best = wList[0];
 			Gene secondBest = wList[1];
 			
+			//last 2 get culled for the best
+			//wList[ancestors_ - 1] = new Gene(best);
+			//wList[ancestors_ - 2] = new Gene(secondBest);
+			
 			for(int x = 0; x < ancestors_; x ++)
 			{			
 				Gene child;
 				
 				double prob = Math.random() * 1;
 				
-				if(prob > ((1/ancestors_)*2))
+				if(prob > favor_)
 				{		
 					//2/ancestor times we will not have random mating, it will be the best
 					int mate1 = (int)(Math.random()*(ancestors_ - 1));
 					int mate2 = (int)(Math.random()*(ancestors_ - 1));
 					
-					while(mate2 == mate1)
+					while(mate2 == 1)
 					{
 						//no mating with self
 						mate2 = (int)(Math.random()*(ancestors_ - 1));
 					}
 					//first gets first dibs
-					child = nextGene(wList[mate2], wList[mate1]);
+					child = nextGene(wList[mate2], wList[1]);
 				}
 				
 				else
