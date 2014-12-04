@@ -73,30 +73,26 @@ public class Player1 extends Player {
 		Gene gene = _placement.getBoard();
 		
 		System.out.println("Placing Ships");
-		if(game.p1 == this)
-		{
+		
 			game.putShip(myShips, Ships.SHIP_CARRIER,gene.gene_.get(4).row_ + 1, gene.gene_.get(4).col_ + 1, gene.gene_.get(4).direction_);
 			game.putShip(myShips, Ships.SHIP_BATTLESHIP, gene.gene_.get(3).row_ + 1, gene.gene_.get(3).col_ + 1, gene.gene_.get(3).direction_);
 			game.putShip(myShips, Ships.SHIP_CRUISER,gene.gene_.get(2).row_ + 1, gene.gene_.get(2).col_ + 1, gene.gene_.get(2).direction_);
 			game.putShip(myShips, Ships.SHIP_DESTROYER,gene.gene_.get(1).row_ + 1, gene.gene_.get(1).col_ + 1, gene.gene_.get(1).direction_);
 			game.putShip(myShips, Ships.SHIP_SUBMARINE,gene.gene_.get(0).row_ + 1, gene.gene_.get(0).col_ + 1, gene.gene_.get(0).direction_);
-		}
-		 
-		else
-		{
+		
+			/*
 			gene = _placement.randomizeBoard();
 			game.putShip(myShips, Ships.SHIP_CARRIER,gene.gene_.get(4).row_ + 1, gene.gene_.get(4).col_ + 1, gene.gene_.get(4).direction_);
 			game.putShip(myShips, Ships.SHIP_BATTLESHIP, gene.gene_.get(3).row_ + 1, gene.gene_.get(3).col_ + 1, gene.gene_.get(3).direction_);
 			game.putShip(myShips, Ships.SHIP_CRUISER,gene.gene_.get(2).row_ + 1, gene.gene_.get(2).col_ + 1, gene.gene_.get(2).direction_);
 			game.putShip(myShips, Ships.SHIP_DESTROYER,gene.gene_.get(1).row_ + 1, gene.gene_.get(1).col_ + 1, gene.gene_.get(1).direction_);
-			game.putShip(myShips, Ships.SHIP_SUBMARINE,gene.gene_.get(0).row_ + 1, gene.gene_.get(0).col_ + 1, gene.gene_.get(0).direction_);
+			game.putShip(myShips, Ships.SHIP_SUBMARINE,gene.gene_.get(0).row_ + 1, gene.gene_.get(0).col_ + 1, gene.gene_.get(0).direction_);*/
 			
 //			game.putShip(myShips, Ships.SHIP_CARRIER,2, 2, Ships.SHIP_SOUTH);
 //			game.putShip(myShips, Ships.SHIP_BATTLESHIP, 5, 5, Ships.SHIP_EAST);
 //			game.putShip(myShips, Ships.SHIP_CRUISER, 6, 7, Ships.SHIP_EAST);
 //			game.putShip(myShips, Ships.SHIP_DESTROYER, 8, 3, Ships.SHIP_EAST);
 //			game.putShip(myShips, Ships.SHIP_SUBMARINE, 9, 9, Ships.SHIP_NORTH);
-		}
 		
 		return true;
 	}
